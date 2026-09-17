@@ -60,3 +60,19 @@ lerna-debug.log*
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+
+# ========================
+# Uploads & Media
+# ========================
+backend/uploads/*
+!backend/uploads/qr/
+backend/uploads/qr/*
+!backend/uploads/qr/.gitkeep
+
+# ========================
+# Database & Test DBs
+# ========================
+*.sqlite
+*.sqlite3
+*.db
