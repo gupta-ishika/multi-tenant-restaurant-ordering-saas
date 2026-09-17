@@ -1,12 +1,8 @@
 # Multi-Tenant Restaurant Ordering SaaS
 
-A multi-tenant SaaS platform for restaurants that provides restaurant-specific
-management of menus, tables, QR codes, and customer orders.
+A multi-tenant SaaS platform for restaurants, providing restaurant-specific management of menus, tables, and QR codes, with customer ordering functionality under development.
 
-Each restaurant operates as an independent tenant, with its own categories,
-menu items, tables, and orders isolated from other restaurants on the platform.
-Customers can scan a table-specific QR code to access the restaurant's digital
-menu and place orders.
+Each restaurant operates as an independent tenant, with its own categories, menu items, and tables isolated from other restaurants on the platform. Customers can scan a table-specific QR code to view the restaurant's digital menu.
 
 ---
 
@@ -36,16 +32,13 @@ menu and place orders.
 - Table-specific customer menu URLs
 - Public QR-based table lookup
 
-### Customer Ordering
-
-Planned:
-
+### Customer Ordering (Planned)
 - Digital restaurant menu
 - Shopping cart
 - Order placement
 - Order tracking
 
-> Customer ordering, kitchen management, and analytics are currently under development.
+> Kitchen management and analytics are also planned for future development.
 
 ---
 
@@ -78,9 +71,7 @@ Planned:
 
 ### Tenant Isolation
 
-The application is designed as a multi-tenant SaaS platform where each
-restaurant represents an independent tenant, with ownership over its own
-categories, food items, tables, QR codes, and orders.
+The application is designed as a multi-tenant SaaS platform where each restaurant represents an independent tenant, with ownership over its own categories, food items, tables, and QR codes.
 
 Every authenticated request carries the restaurant's identity in its JWT.
 Protected API endpoints use that identity to scope database queries by
@@ -94,7 +85,6 @@ Restaurant A                    Restaurant B
  ├── Categories                  ├── Categories
  ├── Food Items                  ├── Food Items
  ├── Tables                      ├── Tables
- └── Orders                      └── Orders
 ```
 
 ---
@@ -259,4 +249,4 @@ npm run dev
 **Ishika Gupta**
 
 Computer Science student focused on software engineering,
-backend development, full-stack systems, and AI/RAG applications.
+backend development, full-stack systems, and AI/RAG applications.~
