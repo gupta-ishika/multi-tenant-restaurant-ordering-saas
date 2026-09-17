@@ -1,129 +1,181 @@
-# 🍽️ QR Code Food Ordering System
+# Multi-Tenant Restaurant Ordering SaaS
 
-A full-stack food ordering application where customers can scan a QR code placed on a restaurant table, browse the digital menu, place orders, and track their order status in real time.
+A multi-tenant SaaS platform for restaurants that provides restaurant-specific
+management of menus, tables, QR codes, and customer orders.
 
-This project is being built from scratch following industry-standard software development practices.
-
----
-
-## 🚀 Features (Planned)
-
-### 👨‍🍳 Customer
-- Scan QR code to access the menu
-- Browse food categories
-- Search and filter menu items
-- Add items to cart
-- Place orders
-- Track order status
-
-### 🏪 Restaurant Admin
-- Secure authentication
-- Manage menu categories
-- Add, edit, and delete food items
-- Upload food images
-- Manage tables and QR codes
-- View and manage orders
-- Analytics dashboard
-
-### 👨‍🍳 Kitchen
-- View incoming orders
-- Update order status
-- Real-time order management
+Each restaurant operates as an independent tenant, with its own categories,
+menu items, tables, and orders isolated from other restaurants on the platform.
+Customers can scan a table-specific QR code to access the restaurant's digital
+menu and place orders.
 
 ---
 
-## 🛠️ Tech Stack
+## Features
 
-### Frontend
-- React
-- Vite
-- Tailwind CSS
+### Multi-Tenant Restaurant Management
+- Restaurant-specific data ownership
+- Tenant-isolated resources
+- Restaurant profile management
 
-### Backend
-- FastAPI
-- SQLAlchemy
-- Alembic
+### Authentication & Authorization
+- Restaurant registration and login
+- Password hashing
+- JWT authentication
+- Protected API routes
+- Authenticated restaurant context
 
-### Database
-- PostgreSQL (Docker)
+### Menu Management
+- Create and manage food categories
+- Create, update, and delete food items
+- Restaurant ownership validation
+- Soft deletion of resources
 
-### Database Client
-- DBeaver
+### Table & QR Management
+- Create and manage restaurant tables
+- Automatic QR code generation
+- Table-specific customer menu URLs
+- Public QR-based table lookup
 
-### Tools
-- Docker & Docker Compose
-- Git & GitHub
+### Customer Ordering
+
+Planned:
+
+- Digital restaurant menu
+- Shopping cart
+- Order placement
+- Order tracking
+
+> Customer ordering, kitchen management, and analytics are currently under development.
 
 ---
 
-## 📁 Project Structure
+## Architecture
 
 ```text
-food-ordering-system/
+                    ┌──────────────────────┐
+                    │      React Client    │
+                    │   React + Tailwind   │
+                    └──────────┬───────────┘
+                               │
+                            REST API
+                               │
+                    ┌──────────▼───────────┐
+                    │       FastAPI        │
+                    │ Authentication       │
+                    │ Tenant Isolation     │
+                    │ Business Logic       │
+                    └──────────┬───────────┘
+                               │
+                         SQLAlchemy
+                               │
+                    ┌──────────▼───────────┐
+                    │     PostgreSQL       │
+                    │     Tenant Data      │
+                    └──────────────────────┘
+
+                  Docker / Docker Compose
+```
+
+### Tenant Isolation
+
+The application is designed as a multi-tenant SaaS platform where each
+restaurant represents an independent tenant, with ownership over its own
+categories, food items, tables, QR codes, and orders.
+
+Every authenticated request carries the restaurant's identity in its JWT.
+Protected API endpoints use that identity to scope database queries by
+`restaurant_id`, ensuring that a restaurant can only access its own resources.
+
+The same application infrastructure serves multiple restaurants while
+maintaining logical isolation between their data.
+
+```text
+Restaurant A                    Restaurant B
+ ├── Categories                  ├── Categories
+ ├── Food Items                  ├── Food Items
+ ├── Tables                      ├── Tables
+ └── Orders                      └── Orders
+```
+
+---
+
+## Database Design
+
+The application uses PostgreSQL with SQLAlchemy and Alembic.
+
+Core entities include:
+
+```text
+Restaurant
+   │
+   ├── Categories
+   │      └── Food Items
+   │
+   ├── Tables
+   │      └── QR Code
+   │
+   └── Orders
+          └── Order Items
+```
+
+Restaurant-owned resources are associated with a `restaurant_id` to support
+tenant-level data isolation.
+
+---
+
+## Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | React, Vite, Tailwind CSS |
+| Backend | FastAPI, SQLAlchemy |
+| Database | PostgreSQL |
+| Migrations | Alembic |
+| Authentication | JWT, bcrypt |
+| QR Generation | Python QRCode |
+| Infrastructure | Docker, Docker Compose |
+| API Documentation | Swagger / OpenAPI |
+| Version Control | Git, GitHub |
+
+---
+
+## Key Engineering Concepts
+
+- Multi-tenant SaaS architecture
+- Tenant-level data isolation
+- REST API design
+- JWT authentication
+- Resource-level authorization
+- Ownership-scoped database queries
+- SQLAlchemy relationships
+- Database migrations with Alembic
+- Soft-delete patterns
+- QR-based resource access
+- Containerized PostgreSQL development
+
+---
+
+## Project Structure
+
+```text
+multi-tenant-restaurant-ordering-saas/
 │
 ├── backend/
-│   ├── alembic/
-│   │   ├── versions/
-│   │   ├── env.py
-│   │   └── script.py.mako
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── __init__.py
-│   │   │   ├── auth.py
-│   │   │   ├── categories.py
-│   │   │   ├── deps.py
-│   │   │   ├── food_items.py
-│   │   │   ├── public.py
-│   │   │   ├── restaurants.py
-│   │   │   └── tables.py
 │   │   ├── core/
-│   │   │   ├── __init__.py
-│   │   │   ├── config.py
-│   │   │   └── security.py
 │   │   ├── database/
-│   │   │   ├── __init__.py
-│   │   │   ├── base.py
-│   │   │   └── database.py
 │   │   ├── enums/
-│   │   │   ├── __init__.py
-│   │   │   └── order_status.py
 │   │   ├── models/
-│   │   │   ├── __init__.py
-│   │   │   ├── category.py
-│   │   │   ├── food_item.py
-│   │   │   ├── order.py
-│   │   │   ├── order_item.py
-│   │   │   ├── restaurant.py
-│   │   │   └── table.py
 │   │   ├── schemas/
-│   │   │   ├── __init__.py
-│   │   │   ├── auth.py
-│   │   │   ├── category.py
-│   │   │   ├── food_item.py
-│   │   │   ├── restaurant.py
-│   │   │   └── table.py
 │   │   ├── services/
-│   │   │   ├── __init__.py
-│   │   │   └── qr_service.py
-│   │   ├── utils/
 │   │   └── main.py
-│   │
-│   ├── alembic.ini
+│   ├── alembic/
 │   ├── requirements.txt
 │   └── .env.example
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── hooks/
-│   │   ├── layouts/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── styles/
-│   │   └── utils/
-│   │
 │   └── package.json
 │
 ├── docker-compose.yml
@@ -133,12 +185,12 @@ food-ordering-system/
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/gupta-ishika/multi-tenant-restaurant-ordering-saas.git
 ```
 
 ### 2. Start PostgreSQL
@@ -167,146 +219,44 @@ npm install
 npm run dev
 ```
 
----
+### Application URLs
 
-## 🌐 Application URLs
-
-Frontend:
-
-```
-http://localhost:5173
-```
-
-Backend:
-
-```
-http://127.0.0.1:8000
-```
-
-Swagger API Documentation:
-
-```
-http://127.0.0.1:8000/docs
-```
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:5173 |
+| Backend | http://127.0.0.1:8000 |
+| Swagger / OpenAPI | http://127.0.0.1:8000/docs |
 
 ---
 
-## 📌 Current Status
+## Current Status
 
-**Phase 1 – Project Planning & Setup** ✅
+### Completed
 
-Completed:
-- Git repository setup
-- FastAPI backend setup
-- React + Vite frontend setup
-- Tailwind CSS configuration
-- Frontend ↔ Backend communication
-- PostgreSQL with Docker
-- SQLAlchemy database connection
+- [x] Project setup
+- [x] Database design
+- [x] Database migrations with Alembic
+- [x] Restaurant authentication
+- [x] Restaurant management APIs
+- [x] Multi-tenant resource isolation
+- [x] Table & QR code management
 
-**Phase 2 – Database Design** ✅
+### In Progress
 
-Completed:
-- SQLAlchemy models: Restaurant, Category, FoodItem, Table, Order, OrderItem
-- Enum: OrderStatus (Received, Preparing, Ready, Served, Cancelled)
-- DeclarativeBase setup with relationship mappings
-
-**Phase 2.5 – Database Setup & Migration** ✅
-
-Completed:
-- Alembic installed and configured (`alembic.ini` & `env.py`)
-- Initial database migration created (`initial_schema`)
-- PostgreSQL schema populated and managed with Alembic
-
-**Phase 3 – Restaurant Authentication** ✅
-
-Learning Objectives:
-- Password hashing
-- Why we never store plain passwords
-- JWT (JSON Web Tokens)
-- Authentication vs Authorization
-- Protected routes
-- Dependency Injection in FastAPI
-- Current authenticated user
-
-**Deliverable**:
-Restaurant dashboard accessible only after login.
-
-Completed:
-- `core/config.py` – Centralized env config (`SECRET_KEY`, `ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`) with startup validation
-- `core/security.py` – Password hashing (bcrypt via passlib) & JWT create/decode (python-jose)
-- `schemas/auth.py` – Pydantic schemas: `RestaurantRegister`, `RestaurantLogin`, `Token`
-- `api/auth.py` – Register, login, and protected `/auth/me` endpoint
-- `api/deps.py` – `get_current_restaurant` dependency (JWT validation & user lookup)
-- `hashed_password` field on the Restaurant model (plain passwords are never stored)
-- Removed duplicate `Base` class from `models/base.py` (single source of truth in `database/base.py`)
-- New dependencies: `passlib`, `python-jose`, `python-multipart`, `pydantic[email]`
-
-**Phase 4 – Restaurant Dashboard (CRUD APIs)** ✅
-
-Learning Objectives:
-- RESTful API design (CRUD operations)
-- Pydantic response & request schemas (`from_attributes`)
-- Ownership-scoped queries (all data filtered by `current_restaurant`)
-- Soft-delete pattern (`is_active = False` instead of hard delete)
-- SQLAlchemy joins for cross-table ownership checks
-- Duplicate validation on create & update
-- Router organization and registration in FastAPI
-
-**Deliverable**:
-Protected APIs for managing the restaurant profile, categories, food items, and tables, with restaurant-level ownership isolation.
-
-Completed:
-- `api/restaurants.py` – GET & PUT `/restaurants/me` (view & update profile)
-- `api/categories.py` – Full CRUD for `/categories` (create, list, get, update, soft-delete)
-- `api/food_items.py` – Full CRUD for `/food-items` (create, list, get, update, soft-delete) with category ownership validation via JOIN
-- `api/tables.py` – Full CRUD for `/tables` (create, list, get, update, soft-delete) with duplicate table number check
-- `schemas/restaurant.py` – `RestaurantResponse` & `RestaurantUpdate` Pydantic schemas
-- `schemas/category.py` – `CategoryCreate` & `CategoryResponse` Pydantic schemas
-- `schemas/food_item.py` – `FoodItemCreate` & `FoodItemResponse` Pydantic schemas (with `Decimal` price, optional fields)
-- `schemas/table.py` – `TableCreate` & `TableResponse` Pydantic schemas
-- All routers registered in `main.py` with appropriate prefixes and tags
-
-**Phase 5 – QR Code & Table Management** ✅
-
-Learning Objectives:
-- Automated QR code image generation
-- Serving static media assets in FastAPI (`StaticFiles`)
-- Public unauthenticated endpoints for customer menu access
-- Table ownership scoping and unique table number constraint handling
-
-**Deliverable**:
-Table CRUD management with automated QR code generation pointing to customer table menu URLs, static image serving, and public table lookup endpoint.
-
-Completed:
-- `services/qr_service.py` – Automated QR code image generation (`qrcode` library) encoding `{FRONTEND_URL}/menu/table/{table_id}`, saving PNG assets to `uploads/qr/`
-- `api/tables.py` – Full CRUD APIs for `/tables` with auto-generated QR code URL on creation and duplicate table number validation per restaurant
-- `api/public.py` – Public endpoint `GET /public/tables/{table_id}` returning table & active restaurant info for customer QR scans without authentication
-- `main.py` – Mounted `/uploads` directory for static file serving of QR PNGs and registered `table_router` and `public_router`
-- `requirements.txt` – Added `qrcode` and `pillow` dependencies
+- [ ] Customer menu
+- [ ] Shopping cart
+- [ ] Order management
+- [ ] Kitchen dashboard
+- [ ] Real-time order tracking
+- [ ] Role-based access control for restaurant staff
+- [ ] Analytics
+- [ ] Deployment
 
 ---
 
-## 📅 Roadmap
-
-- [x] Phase 1 – Project Planning & Setup
-- [x] Phase 2 – Database Design
-- [x] Phase 2.5 – Database Setup & Migration
-- [x] Phase 3 – Restaurant Authentication
-- [x] Phase 4 – Restaurant Dashboard
-- [x] Phase 5 – QR Code & Table Management
-- [ ] Phase 6 – Customer Menu
-- [ ] Phase 7 – Shopping Cart
-- [ ] Phase 8 – Order Management
-- [ ] Phase 9 – Kitchen Dashboard
-- [ ] Phase 10 – Order Tracking
-- [ ] Phase 11 – Analytics
-- [ ] Phase 12 – Deployment
-
----
-
-## 👩‍💻 Author
+## Author
 
 **Ishika Gupta**
 
-Built as a learning project to gain hands-on experience in full-stack web development using React, FastAPI, PostgreSQL, Docker, and modern development practices.
+Computer Science student focused on software engineering,
+backend development, full-stack systems, and AI/RAG applications.
