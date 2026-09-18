@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import API_BASE_URL from "./services/api";
 
-function App() {
+import TableMenu from "./pages/TableMenu";
+
+function Home() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -18,6 +21,17 @@ function App() {
         {message}
       </h1>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/menu/table/:tableId" element={<TableMenu />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
