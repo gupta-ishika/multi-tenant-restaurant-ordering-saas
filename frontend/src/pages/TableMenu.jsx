@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import API_BASE_URL from "../services/api";
+import { useCart } from "../context/CartContext";
 
 function TableMenu() {
     const { tableId } = useParams();
+    const { cartItems, addToCart } = useCart();
 
     const [menu, setMenu] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -57,14 +59,28 @@ function TableMenu() {
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
             <div className="bg-white px-6 py-6 shadow-sm">
-                <div className="mx-auto max-w-4xl">
-                    <h1 className="text-3xl font-bold text-gray-900">
-                        {menu.restaurant_name}
-                    </h1>
+                <div className="mx-auto flex max-w-4xl items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">
+                            {menu.restaurant_name}
+                        </h1>
 
-                    <p className="mt-1 text-gray-500">
-                        Table {menu.table_number}
-                    </p>
+                        <p className="mt-1 text-gray-500">
+                            Table {menu.table_number}
+                        </p>
+                    </div>
+
+                    <Link
+                        to="/cart"
+                        className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white"
+                    >
+                        View Cart (
+                        {cartItems.reduce(
+                            (sum, item) => sum + item.quantity,
+                            0
+                        )}
+                        )
+                    </Link>
                 </div>
             </div>
 
@@ -132,6 +148,11 @@ function TableMenu() {
                                             <p className="whitespace-nowrap font-semibold text-gray-900">
                                                 ₹{item.price}
                                             </p>
+
+                                            <button
+                                                onClick={() => addToCart(item)}
+                                                className="mt-3 rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
+                                            >Add to cart</button>
 
                                         </div>
                                     </div>

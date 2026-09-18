@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import API_BASE_URL from "./services/api";
 
+import API_BASE_URL from "./services/api";
 import TableMenu from "./pages/TableMenu";
+import { CartProvider } from "./context/CartContext";
+import Cart from "./pages/Cart";
 
 function Home() {
   const [message, setMessage] = useState("");
@@ -26,12 +28,15 @@ function Home() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/menu/table/:tableId" element={<TableMenu />} />
-      </Routes>
-    </BrowserRouter>
+    <CartProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/menu/table/:tableId" element={<TableMenu />} />
+          <Route path="/cart" element={<Cart />} />
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
   );
 }
 
