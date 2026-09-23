@@ -71,7 +71,6 @@ def create_order(
             db.query(FoodItem)
             .filter(
                 FoodItem.id == item_data.food_item_id,
-                FoodItem.is_available == True,
                 FoodItem.category.has(
                     restaurant_id=restaurant.id
                 ),
@@ -79,10 +78,16 @@ def create_order(
             .first()
         )
 
-        if food_item is None:
+        if food_item is None or not food_item.is_active:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Food item {item_data.food_item_id} not found",
+            )
+
+        if not food_item.is_available:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Food item '{food_item.name}' is currently unavailable",
             )
 
         validated_items.append((item_data, food_item))

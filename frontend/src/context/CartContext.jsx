@@ -1,15 +1,18 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
+const CART_STORAGE_KEY = "food_ordering_cart";
+const CART_TABLE_STORAGE_KEY = "food_ordering_table_id";
+
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cartTableId, setCartTableId] = useState(() => {
-    return localStorage.getItem("cart_table_id") || localStorage.getItem("food_ordering_table_id");
+    return localStorage.getItem(CART_TABLE_STORAGE_KEY);
   });
 
   const [cartItems, setCartItems] = useState(() => {
     try {
-      const savedCart = localStorage.getItem("cart") || localStorage.getItem("food_ordering_cart");
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
       return savedCart ? JSON.parse(savedCart) : [];
     } catch {
       return [];
@@ -19,18 +22,22 @@ export function CartProvider({ children }) {
   const setTableForCart = (tableId) => {
     const stringId = tableId ? String(tableId) : null;
     setCartTableId(stringId);
+
     if (stringId) {
-      localStorage.setItem("cart_table_id", stringId);
-      localStorage.setItem("food_ordering_table_id", stringId);
+      localStorage.setItem(
+        CART_TABLE_STORAGE_KEY,
+        stringId
+      );
     } else {
-      localStorage.removeItem("cart_table_id");
-      localStorage.removeItem("food_ordering_table_id");
+      localStorage.removeItem(CART_TABLE_STORAGE_KEY);
     }
   };
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-    localStorage.setItem("food_ordering_cart", JSON.stringify(cartItems));
+    localStorage.setItem(
+      CART_STORAGE_KEY,
+      JSON.stringify(cartItems)
+    );
   }, [cartItems]);
 
   const addToCart = (foodItem) => {
@@ -111,10 +118,9 @@ export function CartProvider({ children }) {
   const clearCart = () => {
     setCartItems([]);
     setCartTableId(null);
-    localStorage.removeItem("cart");
-    localStorage.removeItem("cart_table_id");
-    localStorage.removeItem("food_ordering_cart");
-    localStorage.removeItem("food_ordering_table_id");
+
+    localStorage.removeItem(CART_STORAGE_KEY);
+    localStorage.removeItem(CART_TABLE_STORAGE_KEY);
   };
 
   return (
@@ -128,9 +134,7 @@ export function CartProvider({ children }) {
         clearCart,
         updateSpecialInstructions,
         cartTableId,
-        tableId: cartTableId,
         setTableForCart,
-        setCartTable: setTableForCart,
       }}
     >
       {children}

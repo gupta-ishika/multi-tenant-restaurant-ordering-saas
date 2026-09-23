@@ -15,10 +15,10 @@ function Cart() {
     removeFromCart,
     clearCart,
     updateSpecialInstructions,
-    tableId: contextTableId,
+    cartTableId,
   } = useCart();
 
-  const tableId = urlTableId || contextTableId;
+  const tableId = urlTableId || cartTableId;
 
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderError, setOrderError] = useState("");

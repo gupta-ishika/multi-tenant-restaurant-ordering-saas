@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import API_BASE_URL from "../services/api";
 import { useCart } from "../context/CartContext";
 
 function TableMenu() {
   const { tableId } = useParams();
-  const navigate = useNavigate();
 
   const {
     cartItems,
@@ -85,14 +84,10 @@ function TableMenu() {
     addToCart(item);
   };
 
-  const handleStartNewCart = () => {
+  const handleStartNewTable = () => {
     clearCart();
     setTableForCart(tableId);
     setShowTableChangeWarning(false);
-  };
-
-  const handleContinuePreviousTable = () => {
-    navigate(`/menu/table/${cartTableId}`);
   };
 
   if (loading) {
@@ -165,30 +160,28 @@ function TableMenu() {
       <main className="mx-auto max-w-4xl px-6 py-6">
         {/* Table Change Warning Banner */}
         {showTableChangeWarning && (
-          <div className="mb-6 rounded-xl border border-yellow-200 bg-yellow-50 p-5 shadow-xs">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-semibold text-yellow-900">
-                  You already have items from another table.
-                </p>
-                <p className="mt-1 text-sm text-yellow-700">
-                  Your current cart belongs to Table #{cartTableId}. Items from Table #{tableId} cannot be mixed.
-                </p>
-              </div>
-            </div>
+          <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4 shadow-xs">
+            <p className="font-medium text-yellow-800">
+              You already have an active cart.
+            </p>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <p className="mt-1 text-sm text-yellow-700">
+              Your current cart belongs to Table #{cartTableId}.
+            </p>
+
+            <div className="mt-3 flex gap-2">
               <button
-                onClick={handleContinuePreviousTable}
-                className="rounded-lg bg-yellow-800 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-yellow-900"
+                onClick={() => setShowTableChangeWarning(false)}
+                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
               >
-                Continue Table #{cartTableId}
+                Keep Current Cart
               </button>
+
               <button
-                onClick={handleStartNewCart}
-                className="rounded-lg border border-yellow-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-yellow-900 hover:bg-yellow-100"
+                onClick={handleStartNewTable}
+                className="rounded-md bg-black px-3 py-2 text-sm text-white hover:bg-gray-800"
               >
-                Start New Cart for Table #{tableId}
+                Start New Cart
               </button>
             </div>
           </div>
@@ -243,7 +236,9 @@ function TableMenu() {
                 {category.food_items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex flex-col justify-between rounded-xl bg-white p-5 shadow-sm transition hover:shadow-md"
+                    className={`flex flex-col justify-between rounded-xl bg-white p-5 shadow-sm transition hover:shadow-md ${
+                      !item.is_available ? "opacity-60" : ""
+                    }`}
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2">
@@ -273,7 +268,7 @@ function TableMenu() {
                         ₹{Number(item.price).toFixed(2)}
                       </p>
 
-                      {item.is_available === false && (
+                      {!item.is_available && (
                         <p className="mt-1 text-xs font-semibold text-red-600">
                           Currently unavailable
                         </p>
@@ -283,10 +278,10 @@ function TableMenu() {
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => handleAddToCart(item)}
-                        disabled={item.is_available === false}
+                        disabled={!item.is_available}
                         className="rounded-lg bg-gray-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-black disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition"
                       >
-                        {item.is_available === false ? "Unavailable" : "Add to Cart"}
+                        {item.is_available ? "Add to Cart" : "Unavailable"}
                       </button>
                     </div>
                   </div>
