@@ -5,7 +5,11 @@ from app.api.deps import get_current_restaurant
 from app.database.database import get_db
 from app.models.restaurant import Restaurant
 from app.models.table import Table
-from app.schemas.table import TableCreate, TableResponse
+from app.schemas.table import (
+    TableCreate,
+    TableResponse,
+    TableUpdate,
+)
 from app.services.qr_service import generate_qr_code
 
 router = APIRouter(
@@ -174,5 +178,56 @@ def delete_table(
     table.is_active = False
 
     db.commit()
+
+
+@router.patch(
+    "/{table_id}",
+    response_model=TableResponse,
+)
+def patch_table(
+    table_id: int,
+    table_data: TableUpdate,
+    current_restaurant: Restaurant = Depends(get_current_restaurant),
+    db: Session = Depends(get_db),
+):
+    table = (
+        db.query(Table)
+        .filter(
+            Table.id == table_id,
+            Table.restaurant_id == current_restaurant.id,
+        )
+        .first()
+    )
+
+    if table is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Table not found",
+        )
+
+    if table_data.table_number is not None:
+        existing_table = (
+            db.query(Table)
+            .filter(
+                Table.restaurant_id == current_restaurant.id,
+                Table.table_number == table_data.table_number,
+                Table.id != table_id,
+            )
+            .first()
+        )
+        if existing_table:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Table number already exists",
+            )
+        table.table_number = table_data.table_number
+
+    if table_data.is_active is not None:
+        table.is_active = table_data.is_active
+
+    db.commit()
+    db.refresh(table)
+
+    return table
 
 

@@ -7,6 +7,11 @@ class CategoryCreate(BaseModel):
     name: str
 
 
+class CategoryUpdate(BaseModel):
+    name: str | None = None
+    is_active: bool | None = None
+
+
 class CategoryResponse(BaseModel):
     id: int
     restaurant_id: int

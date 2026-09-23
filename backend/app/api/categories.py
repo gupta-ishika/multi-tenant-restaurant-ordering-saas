@@ -5,7 +5,11 @@ from app.api.deps import get_current_restaurant
 from app.database.database import get_db
 from app.models.category import Category
 from app.models.restaurant import Restaurant
-from app.schemas.category import CategoryCreate, CategoryResponse
+from app.schemas.category import (
+    CategoryCreate,
+    CategoryResponse,
+    CategoryUpdate,
+)
 
 router = APIRouter(
     prefix="/categories",
@@ -168,3 +172,39 @@ def delete_category(
     category.is_active = False
 
     db.commit()
+
+
+@router.patch(
+    "/{category_id}",
+    response_model=CategoryResponse,
+)
+def patch_category(
+    category_id: int,
+    category_data: CategoryUpdate,
+    current_restaurant: Restaurant = Depends(get_current_restaurant),
+    db: Session = Depends(get_db),
+):
+    category = (
+        db.query(Category)
+        .filter(
+            Category.id == category_id,
+            Category.restaurant_id == current_restaurant.id,
+        )
+        .first()
+    )
+
+    if category is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Category not found",
+        )
+
+    if category_data.name is not None:
+        category.name = category_data.name
+    if category_data.is_active is not None:
+        category.is_active = category_data.is_active
+
+    db.commit()
+    db.refresh(category)
+
+    return category

@@ -7,6 +7,9 @@ import { CartProvider } from "./context/CartContext";
 import Cart from "./pages/Cart";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
+import Dashboard from "./pages/Dashboard";
+import Menu from "./pages/Menu";
+import Tables from "./pages/Tables";
 
 function Home() {
   const [message, setMessage] = useState("");
@@ -34,6 +37,9 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/tables" element={<Tables />} />
           <Route path="/menu/table/:tableId" element={<TableMenu />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/orders" element={<Orders />} />
