@@ -10,6 +10,10 @@ from app.api.categories import router as category_router
 from app.api.food_items import router as food_item_router
 from app.api.tables import router as table_router
 from app.api.public import router as public_router
+from app.api.orders import (
+    public_router as public_order_router,
+    restaurant_router as restaurant_order_router,
+)
 
 app = FastAPI()
 
@@ -35,6 +39,8 @@ app.include_router(category_router)
 app.include_router(food_item_router)
 app.include_router(table_router)
 app.include_router(public_router)
+app.include_router(restaurant_order_router)
+app.include_router(public_order_router)
 
 
 @app.get("/")

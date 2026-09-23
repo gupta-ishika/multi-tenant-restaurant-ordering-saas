@@ -5,6 +5,7 @@ import API_BASE_URL from "./services/api";
 import TableMenu from "./pages/TableMenu";
 import { CartProvider } from "./context/CartContext";
 import Cart from "./pages/Cart";
+import Orders from "./pages/Orders";
 
 function Home() {
   const [message, setMessage] = useState("");
@@ -34,6 +35,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/menu/table/:tableId" element={<TableMenu />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/orders" element={<Orders />} />
         </Routes>
       </BrowserRouter>
     </CartProvider>
