@@ -78,8 +78,9 @@ def get_public_menu(
             db.query(FoodItem)
             .filter(
                 FoodItem.category_id == category.id,
-                FoodItem.is_available == True,
+                FoodItem.is_active == True,
             )
+            .order_by(FoodItem.display_order, FoodItem.id)
             .all()
         )
 
@@ -92,6 +93,8 @@ def get_public_menu(
                     "name": item.name,
                     "description": item.description,
                     "price": item.price,
+                    "is_veg": item.is_veg,
+                    "is_available": item.is_available,
                 }
                 for item in food_items
             ],
