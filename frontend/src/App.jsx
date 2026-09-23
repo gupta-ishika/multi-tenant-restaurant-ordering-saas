@@ -5,8 +5,10 @@ import API_BASE_URL from "./services/api";
 import TableMenu from "./pages/TableMenu";
 import { CartProvider } from "./context/CartContext";
 import Cart from "./pages/Cart";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
+import OrderTracking from "./pages/OrderTracking";
 import Dashboard from "./pages/Dashboard";
 import Menu from "./pages/Menu";
 import Tables from "./pages/Tables";
@@ -42,6 +44,8 @@ function App() {
           <Route path="/tables" element={<Tables />} />
           <Route path="/menu/table/:tableId" element={<TableMenu />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/order/:orderId" element={<OrderConfirmation />} />
+          <Route path="/orders/track/:orderId" element={<OrderTracking />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:orderId" element={<OrderDetails />} />
         </Routes>
