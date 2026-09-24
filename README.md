@@ -28,17 +28,24 @@ Each restaurant operates as an independent tenant, with its own categories, menu
 
 ### Table & QR Management
 - Create and manage restaurant tables
-- Automatic QR code generation
-- Table-specific customer menu URLs
-- Public QR-based table lookup
+- Automatic QR code generation on table creation
+- Environment-configurable QR target URLs
+- QR code image regeneration with tenant isolation
+- Public QR-based table and restaurant menu routing
 
-### Customer Ordering (Planned)
-- Digital restaurant menu
-- Shopping cart
-- Order placement
-- Order tracking
+### Customer Ordering & Live Tracking
+- Table QR code scanning and direct digital menu access
+- Multi-tenant menu isolation (view only scanned restaurant's menu)
+- Real-time client-side shopping cart with table persistence
+- Unauthenticated customer order placement
+- Real-time order tracking page with live status updates
 
-> Kitchen management and analytics are also planned for future development.
+### Restaurant Order Management & Kitchen Feed
+- Live restaurant orders feed with status filtering
+- Itemized order breakdown and total computation
+- Single order inspection and status lifecycle updates (`PENDING` → `CONFIRMED` → `PREPARING` → `READY` → `COMPLETED` / `CANCELLED`)
+- Auto-refreshing order updates
+
 
 ---
 
@@ -223,24 +230,27 @@ npm run dev
 
 ### Completed
 
-- [x] Project setup
-- [x] Database design
+- [x] Project setup & configuration
+- [x] Database design & schema modeling
 - [x] Database migrations with Alembic
-- [x] Restaurant authentication
-- [x] Restaurant management APIs
-- [x] Multi-tenant resource isolation
-- [x] Table & QR code management
+- [x] Multi-tenant restaurant authentication & authorization (JWT, bcrypt)
+- [x] Restaurant menu categories and food items management APIs
+- [x] Multi-tenant resource isolation & security audits
+- [x] Table management APIs with status toggles
+- [x] Dynamic QR code generation, regeneration, & static serving
+- [x] Public table QR routing & customer menu viewing
+- [x] Customer shopping cart & table session management
+- [x] Customer checkout & unauthenticated order placement
+- [x] Live customer order tracking & status monitoring
+- [x] Restaurant live orders feed, item details & status transitions
 
 ### In Progress
 
-- [ ] Customer menu
-- [ ] Shopping cart
-- [ ] Order management
-- [ ] Kitchen dashboard
-- [ ] Real-time order tracking
+- [ ] Table management frontend UI & QR download/print view
+- [ ] Analytics & sales metrics dashboard
 - [ ] Role-based access control for restaurant staff
-- [ ] Analytics
-- [ ] Deployment
+- [ ] Production deployment
+
 
 ---
 
