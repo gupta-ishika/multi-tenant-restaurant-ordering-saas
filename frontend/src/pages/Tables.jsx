@@ -1,38 +1,39 @@
 import { useEffect, useState } from "react";
-import API_BASE_URL from "../services/api";
+
+const BACKEND_URL = "http://127.0.0.1:8000";
 
 function Tables() {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+
   const [tableNumber, setTableNumber] = useState("");
-  const [addingTable, setAddingTable] = useState(false);
-  const [updatingTable, setUpdatingTable] = useState(null);
+  const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchTables = async () => {
-    setRefreshing(true);
-    setError("");
+  const [editingTableId, setEditingTableId] = useState(null);
+  const [editingTableNumber, setEditingTableNumber] = useState("");
 
+  const getToken = () =>
+    localStorage.getItem("access_token") || localStorage.getItem("token");
+
+  const fetchTables = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/tables`, {
+      const response = await fetch(`${BACKEND_URL}/tables/`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch tables.");
+        throw new Error("Failed to fetch tables");
       }
 
       const data = await response.json();
-      if (Array.isArray(data)) {
-        setTables(data);
-      }
+      setTables(data);
     } catch (err) {
+      console.error(err);
       setError(err.message);
     } finally {
-      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -41,212 +42,205 @@ function Tables() {
     fetchTables();
   }, []);
 
-  const createTable = async () => {
+  const createTable = async (event) => {
+    event.preventDefault();
+
     if (!tableNumber.trim()) {
-      setError("Table number is required.");
+      setError("Table number is required");
       return;
     }
 
-    setAddingTable(true);
+    setCreating(true);
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/tables`, {
+      const response = await fetch(`${BACKEND_URL}/tables/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
           table_number: tableNumber.trim(),
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.detail || "Failed to create table.");
+        throw new Error(data.detail || "Failed to create table");
       }
 
-      const newTable = await response.json();
-      setTables((current) => [...current, newTable]);
+      setTables((previousTables) => [...previousTables, data]);
       setTableNumber("");
     } catch (err) {
       setError(err.message);
     } finally {
-      setAddingTable(false);
+      setCreating(false);
     }
   };
 
-  const toggleTableStatus = async (table) => {
-    setUpdatingTable(table.id);
-    setError("");
-
+  const updateTableStatus = async (tableId, isActive) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/tables/${table.id}`,
+        `${BACKEND_URL}/tables/${tableId}/status`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getToken()}`,
           },
           body: JSON.stringify({
-            is_active: !table.is_active,
+            is_active: isActive,
           }),
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to update table.");
+        throw new Error(data.detail || "Failed to update table status");
       }
 
-      const updatedTable = await response.json();
-
-      setTables((current) =>
-        current.map((item) =>
-          item.id === updatedTable.id ? updatedTable : item
+      setTables((previousTables) =>
+        previousTables.map((table) =>
+          table.id === tableId ? data : table
         )
       );
     } catch (err) {
       setError(err.message);
-    } finally {
-      setUpdatingTable(null);
     }
   };
 
-  const activeCount = tables.filter((table) => table.is_active).length;
-  const inactiveCount = tables.filter((table) => !table.is_active).length;
+  const updateTable = async (tableId) => {
+    if (!editingTableNumber.trim()) {
+      setError("Table number is required");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/tables/${tableId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+          },
+          body: JSON.stringify({
+            table_number: editingTableNumber.trim(),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to update table");
+      }
+
+      setTables((previousTables) =>
+        previousTables.map((table) =>
+          table.id === tableId ? data : table
+        )
+      );
+
+      setEditingTableId(null);
+      setEditingTableNumber("");
+      setError("");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (loading) {
+    return <p>Loading tables...</p>;
+  }
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
-      <h1 className="text-3xl font-bold text-gray-900">Tables</h1>
-      <p className="mt-2 text-gray-500">
-        Manage your restaurant tables and QR codes.
-      </p>
+    <div>
+      <h1>Tables</h1>
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+      <form onSubmit={createTable}>
+        <input
+          type="text"
+          value={tableNumber}
+          onChange={(event) => setTableNumber(event.target.value)}
+          placeholder="Enter table number"
+        />
+
+        <button type="submit" disabled={creating}>
+          {creating ? "Creating..." : "Add Table"}
+        </button>
+      </form>
+
+      {error && <p>{error}</p>}
+
+      {tables.length === 0 ? (
+        <p>No tables found.</p>
+      ) : (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            Restaurant Tables
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            {tables.length} {tables.length === 1 ? "table" : "tables"} ({activeCount} active, {inactiveCount} inactive)
-          </p>
-        </div>
+          {tables.map((table) => (
+            <div key={table.id}>
+              <h3>Table {table.table_number}</h3>
 
-        <div className="flex flex-wrap gap-2">
-          <input
-            type="text"
-            value={tableNumber}
-            onChange={(e) => setTableNumber(e.target.value)}
-            placeholder="Table number (e.g. 1, A1)"
-            className="rounded-md border px-3 py-2 text-sm"
-          />
+              <p>
+                Status: {table.is_active ? "Active" : "Inactive"}
+              </p>
 
-          <button
-            onClick={createTable}
-            disabled={addingTable}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            {addingTable ? "Adding..." : "Add Table"}
-          </button>
+              {editingTableId === table.id ? (
+                <div>
+                  <input
+                    type="text"
+                    value={editingTableNumber}
+                    onChange={(event) =>
+                      setEditingTableNumber(event.target.value)
+                    }
+                  />
 
-          <button
-            onClick={fetchTables}
-            disabled={refreshing}
-            className="rounded-md border bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            {refreshing ? "Refreshing..." : "Refresh"}
-          </button>
-        </div>
-      </div>
+                  <button onClick={() => updateTable(table.id)}>
+                    Save
+                  </button>
 
-      {error && (
-        <p className="mt-2 text-sm text-red-600">
-          {error}
-        </p>
-      )}
-
-      <div className="mt-6">
-        {loading ? (
-          <p className="text-gray-500">Loading tables...</p>
-        ) : tables.length === 0 ? (
-          <p className="text-gray-500">No tables found.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tables.map((table) => (
-              <div
-                key={table.id}
-                className="rounded-lg border bg-white p-5 shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Table {table.table_number}
-                  </h3>
-
-                  <span
-                    className={`text-sm font-medium ${
-                      table.is_active
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }`}
+                  <button
+                    onClick={() => {
+                      setEditingTableId(null);
+                      setEditingTableNumber("");
+                    }}
                   >
-                    {table.is_active ? "Active" : "Inactive"}
-                  </span>
+                    Cancel
+                  </button>
                 </div>
-
-                <p className="mt-1 text-xs text-gray-400">
-                  ID: {table.id}
-                </p>
-
-                <div className="mt-4 border-t pt-4">
-                  <p className="text-sm font-medium text-gray-700">
-                    QR Code
-                  </p>
-
-                  {table.qr_code_url ? (
-                    <div className="mt-2 flex items-center justify-between">
-                      <a
-                        href={table.qr_code_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-sm text-blue-600 hover:underline"
-                      >
-                        View QR Code
-                      </a>
-
-                      <a
-                        href={`/menu/table/${table.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-gray-500 hover:underline"
-                      >
-                        Open Menu Page ↗
-                      </a>
-                    </div>
-                  ) : (
-                    <p className="mt-1 text-sm text-gray-500">
-                      No QR code generated
-                    </p>
-                  )}
-                </div>
-
+              ) : (
                 <button
-                  onClick={() => toggleTableStatus(table)}
-                  disabled={updatingTable === table.id}
-                  className="mt-4 w-full rounded-md border px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  onClick={() => {
+                    setEditingTableId(table.id);
+                    setEditingTableNumber(table.table_number);
+                  }}
                 >
-                  {updatingTable === table.id
-                    ? "Updating..."
-                    : table.is_active
-                    ? "Disable Table"
-                    : "Enable Table"}
+                  Edit
                 </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              )}
+
+              <button
+                onClick={() =>
+                  updateTableStatus(table.id, !table.is_active)
+                }
+              >
+                {table.is_active ? "Deactivate" : "Activate"}
+              </button>
+
+              {table.qr_code_url && (
+                <img
+                  src={`${BACKEND_URL}${table.qr_code_url}`}
+                  alt={`QR code for table ${table.table_number}`}
+                  width="150"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
