@@ -1,7 +1,10 @@
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_restaurant
+from app.core.config import FRONTEND_URL
 from app.database.database import get_db
 from app.models.restaurant import Restaurant
 from app.models.table import Table
@@ -11,6 +14,7 @@ from app.schemas.table import (
     TableStatusUpdate,
     TableUpdate,
 )
+from app.utils.qr import generate_qr_code
 
 router = APIRouter(
     prefix="/tables",
@@ -54,7 +58,75 @@ def create_table(
     db.commit()
     db.refresh(table)
 
+    frontend_url = (
+        f"{FRONTEND_URL}/menu/"
+        f"{current_restaurant.id}/{table.id}"
+    )
+
+    qr_directory = Path("uploads/qr")
+    qr_directory.mkdir(parents=True, exist_ok=True)
+
+    qr_file_path = qr_directory / f"table_{table.id}.png"
+
+    generate_qr_code(
+        frontend_url,
+        str(qr_file_path),
+    )
+
+    table.qr_code_url = f"/uploads/qr/table_{table.id}.png"
+
+    db.commit()
+    db.refresh(table)
+
     return table
+
+
+@router.post(
+    "/{table_id}/qr",
+    response_model=TableResponse,
+)
+def regenerate_table_qr(
+    table_id: int,
+    db: Session = Depends(get_db),
+    current_restaurant: Restaurant = Depends(get_current_restaurant),
+):
+    table = (
+        db.query(Table)
+        .filter(
+            Table.id == table_id,
+            Table.restaurant_id == current_restaurant.id,
+        )
+        .first()
+    )
+
+    if not table:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Table not found",
+        )
+
+    frontend_url = (
+        f"{FRONTEND_URL}/menu/"
+        f"{current_restaurant.id}/{table.id}"
+    )
+
+    qr_directory = Path("uploads/qr")
+    qr_directory.mkdir(parents=True, exist_ok=True)
+
+    qr_file_path = qr_directory / f"table_{table.id}.png"
+
+    generate_qr_code(
+        frontend_url,
+        str(qr_file_path),
+    )
+
+    table.qr_code_url = f"/uploads/qr/table_{table.id}.png"
+
+    db.commit()
+    db.refresh(table)
+
+    return table
+
 
 
 @router.get(
