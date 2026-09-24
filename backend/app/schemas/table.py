@@ -1,6 +1,4 @@
-from datetime import datetime
-
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TableCreate(BaseModel):
@@ -12,6 +10,10 @@ class TableUpdate(BaseModel):
     is_active: bool | None = None
 
 
+class TableStatusUpdate(BaseModel):
+    is_active: bool
+
+
 class TableResponse(BaseModel):
     id: int
     restaurant_id: int
@@ -19,6 +21,4 @@ class TableResponse(BaseModel):
     qr_code_url: str
     is_active: bool
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = ConfigDict(from_attributes=True)
