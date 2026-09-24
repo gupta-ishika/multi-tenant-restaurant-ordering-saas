@@ -153,6 +153,36 @@ function Tables() {
     }
   };
 
+  const regenerateQR = async (tableId) => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/tables/${tableId}/qr`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to regenerate QR");
+      }
+
+      setTables((previousTables) =>
+        previousTables.map((table) =>
+          table.id === tableId ? data : table
+        )
+      );
+
+      setError("");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) {
     return <p>Loading tables...</p>;
   }
@@ -231,11 +261,39 @@ function Tables() {
               </button>
 
               {table.qr_code_url && (
-                <img
-                  src={`${BACKEND_URL}${table.qr_code_url}`}
-                  alt={`QR code for table ${table.table_number}`}
-                  width="150"
-                />
+                <div>
+                  <img
+                    src={`${BACKEND_URL}${table.qr_code_url}`}
+                    alt={`QR code for table ${table.table_number}`}
+                    width="150"
+                  />
+
+                  <div>
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `${BACKEND_URL}${table.qr_code_url}`,
+                          "_blank"
+                        )
+                      }
+                    >
+                      View QR
+                    </button>
+
+                    <a
+                      href={`${BACKEND_URL}${table.qr_code_url}`}
+                      download={`table_${table.table_number}_qr.png`}
+                    >
+                      <button type="button">Download QR</button>
+                    </a>
+
+                    <button
+                      onClick={() => regenerateQR(table.id)}
+                    >
+                      Regenerate QR
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           ))}
@@ -244,5 +302,6 @@ function Tables() {
     </div>
   );
 }
+
 
 export default Tables;

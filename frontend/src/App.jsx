@@ -11,6 +11,7 @@ import OrderTracking from "./pages/OrderTracking";
 import Dashboard from "./pages/Dashboard";
 import Menu from "./pages/Menu";
 import Tables from "./pages/Tables";
+import CustomerMenu from "./pages/CustomerMenu";
 
 function Home() {
   const [message, setMessage] = useState("");
@@ -41,6 +42,10 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/tables" element={<Tables />} />
+          <Route
+            path="/menu/:restaurantId/:tableId"
+            element={<CustomerMenu />}
+          />
           <Route path="/menu/table/:tableId" element={<TableMenu />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/orders/track/:orderId" element={<OrderTracking />} />
@@ -51,5 +56,6 @@ function App() {
     </CartProvider>
   );
 }
+
 
 export default App;

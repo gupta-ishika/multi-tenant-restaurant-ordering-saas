@@ -107,3 +107,97 @@ def get_public_menu(
         "table_number": table.table_number,
         "categories": menu,
     }
+
+
+@router.get("/restaurants/{restaurant_id}/tables/{table_id}")
+def get_public_restaurant_table(
+    restaurant_id: int,
+    table_id: int,
+    db: Session = Depends(get_db),
+):
+    table = (
+        db.query(Table)
+        .filter(
+            Table.id == table_id,
+            Table.restaurant_id == restaurant_id,
+            Table.is_active == True,
+        )
+        .first()
+    )
+
+    if not table:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Restaurant table not found or inactive",
+        )
+
+    return {
+        "restaurant_id": table.restaurant_id,
+        "table_id": table.id,
+        "table_number": table.table_number,
+    }
+
+
+@router.get("/restaurants/{restaurant_id}/menu")
+def get_public_restaurant_menu(
+    restaurant_id: int,
+    db: Session = Depends(get_db),
+):
+    restaurant = (
+        db.query(Restaurant)
+        .filter(
+            Restaurant.id == restaurant_id,
+            Restaurant.is_active == True,
+        )
+        .first()
+    )
+
+    if not restaurant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Restaurant not found",
+        )
+
+    categories = (
+        db.query(Category)
+        .filter(
+            Category.restaurant_id == restaurant.id,
+            Category.is_active == True,
+        )
+        .all()
+    )
+
+    menu = []
+
+    for category in categories:
+        food_items = (
+            db.query(FoodItem)
+            .filter(
+                FoodItem.category_id == category.id,
+                FoodItem.is_active == True,
+            )
+            .order_by(FoodItem.display_order, FoodItem.id)
+            .all()
+        )
+
+        menu.append({
+            "id": category.id,
+            "name": category.name,
+            "food_items": [
+                {
+                    "id": item.id,
+                    "name": item.name,
+                    "description": item.description,
+                    "price": item.price,
+                    "is_veg": item.is_veg,
+                    "is_available": item.is_available,
+                }
+                for item in food_items
+            ],
+        })
+
+    return {
+        "restaurant_id": restaurant.id,
+        "restaurant_name": restaurant.name,
+        "categories": menu,
+    }
